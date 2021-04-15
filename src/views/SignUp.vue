@@ -152,6 +152,7 @@ export default {
         // 跳轉頁面
         this.$route.push("/restaurants");
       } catch (error) {
+        this.isProcessing = false;
         console.log(error);
         Toast.fire({
           icon: "error",
