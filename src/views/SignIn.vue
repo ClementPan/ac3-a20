@@ -1,6 +1,6 @@
 <template>
   <div class="container py-5">
-    <form class="w-100" @submit.prevent.stop="handleSubmit($event)">
+    <form class="w-100" @submit.prevent.stop="handleSubmit">
       <div class="text-center mb-4">
         <h1 class="h3 mb-3 font-weight-normal">Sign In</h1>
       </div>
@@ -34,8 +34,12 @@
         />
       </div>
 
-      <button class="btn btn-lg btn-primary btn-block mb-3" type="submit">
-        Submit
+      <button
+        class="btn btn-lg btn-primary btn-block mb-3"
+        type="submit"
+        :disabled="isProcessing"
+      >
+        {{ isProcessing ? "驗證中..." : "Submit" }}
       </button>
 
       <div class="text-center mb-3">
@@ -50,26 +54,56 @@
 </template>
 
 <script>
+import authorizationAPI from "./../apis/authorization";
+import { Toast } from "./../utils/helpers";
+
 export default {
   data() {
     return {
       email: "",
       password: "",
+      isProcessing: false,
     };
   },
   methods: {
-    handleSubmit(e) {
-      console.log(e);
-      console.log(
-        JSON.stringify({
+    async handleSubmit() {
+      try {
+        // 前端驗證
+        if (!this.email || !this.password) {
+          Toast.fire({
+            icon: "warning",
+            title: "請輸入帳號密碼！",
+          });
+          return;
+        }
+        // isProcessing
+        this.isProcessing = true;
+
+        //  向後端驗證使用者登入資訊是否合法
+        const response = await authorizationAPI.signIn({
           email: this.email,
           password: this.password,
-        })
-      );
-      JSON.stringify();
+        });
+
+        if (response.statusText !== "OK") {
+          throw new Error(response.message);
+        }
+        localStorage.setItem("token", response.data.token);
+        this.$router.push("/restaurants");
+      } catch (error) {
+        this.isProcessing = false;
+
+        this.email = "";
+        this.password = "";
+
+        console.error(error);
+        Toast.fire({
+          icon: "warning",
+          title: "輸入的帳號密碼有誤！",
+        });
+      }
     },
   },
 };
 </script>
-
 

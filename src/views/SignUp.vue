@@ -1,6 +1,6 @@
 <template>
   <div class="container py-5">
-    <form class="w-100" @submit.prevent.stop="handleSubmit">
+    <form class="w-100" @submit.prevent.stop="handleSubmit($event)">
       <div class="text-center mb-4">
         <h1 class="h3 mb-3 font-weight-normal">Sign Up</h1>
       </div>
@@ -62,8 +62,12 @@
         />
       </div>
 
-      <button class="btn btn-lg btn-primary btn-block mb-3" type="submit">
-        Submit
+      <button
+        class="btn btn-lg btn-primary btn-block mb-3"
+        type="submit"
+        :disabled="isProcessing"
+      >
+        {{ isProcessing ? "註冊中..." : "Submit" }}
       </button>
 
       <div class="text-center mb-3">
@@ -78,6 +82,9 @@
 </template>
 
 <script>
+import authorizationAPI from "./../apis/authorization";
+import { Toast } from "../utils/helpers";
+
 export default {
   data() {
     return {
@@ -85,18 +92,72 @@ export default {
       email: "",
       password: "",
       passwordCheck: "",
+      isProcessing: false,
     };
   },
   methods: {
-    handleSubmit() {
-      console.log(
-        JSON.stringify({
-          name: this.name,
-          email: this.email,
-          password: this.password,
-          passwordCheck: this.passwordCheck,
-        })
-      );
+    async handleSubmit(e) {
+      // front-end check
+      if (this.name === "") {
+        Toast.fire({
+          icon: "error",
+          title: "請輸入名稱！",
+        });
+        return;
+      }
+      if (this.email === "") {
+        Toast.fire({
+          icon: "error",
+          title: "請輸入信箱！",
+        });
+        return;
+      }
+      if (this.password === "") {
+        Toast.fire({
+          icon: "error",
+          title: "請輸入密碼！",
+        });
+        return;
+      }
+      if (this.passwordCheck === "") {
+        Toast.fire({
+          icon: "error",
+          title: "請確認密碼！",
+        });
+        return;
+      }
+      if (this.passwordCheck !== this.password) {
+        Toast.fire({
+          icon: "error",
+          title: "密碼和確認密碼不同！",
+        });
+        return;
+      }
+      // post 給後端
+      try {
+        this.isProcessing = true;
+        const form = e.target;
+        const formData = new FormData(form);
+        const response = await authorizationAPI.signUp({ formData });
+        console.log(response);
+        // blocked by CORS
+
+        Toast.fire({
+          icon: "success",
+          title: "註冊成功!",
+        });
+
+        // 儲存 token
+
+        // 跳轉頁面
+        this.$route.push("/restaurants");
+      } catch (error) {
+        console.log(error);
+        Toast.fire({
+          icon: "error",
+          title: error,
+        });
+      }
     },
   },
 };

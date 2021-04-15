@@ -6,7 +6,11 @@
     <div class="row text-center">
       <div class="col-3" v-for="user in users" :key="user.id">
         <router-link :to="{ name: 'user', params: { id: user.id } }">
-          <img :src="user.image" width="140px" height="140px" />
+          <img
+            :src="user.image | emptyImageFilter"
+            width="140px"
+            height="140px"
+          />
         </router-link>
         <h2>{{ user.name }}</h2>
         <span class="badge badge-secondary"
@@ -17,7 +21,7 @@
             v-if="user.isFollowed"
             type="button"
             class="btn btn-danger"
-            @click="toggleFollow(user)"
+            @click="deleteFollowing(user.id)"
           >
             取消追蹤
           </button>
@@ -25,7 +29,7 @@
             v-else
             type="button"
             class="btn btn-primary"
-            @click="toggleFollow(user)"
+            @click="addFollowing(user.id)"
           >
             追蹤
           </button>
@@ -37,58 +41,18 @@
 
 <script>
 import NavTabs from "../components/NavTabs.vue";
-
-const dummyData = {
-  users: [
-    {
-      id: 1,
-      name: "root",
-      email: "root@example.com",
-      password: "$2a$10$r5sNq7DnH82Ly.n0/QjqgOczyBgR3sQ6Yk8NSrKpJtgcJ.Kl0n81K",
-      isAdmin: true,
-      image: null,
-      createdAt: "2021-04-07T14:21:46.000Z",
-      updatedAt: "2021-04-07T14:21:46.000Z",
-      Followers: [],
-      FollowerCount: 0,
-      isFollowed: false,
-    },
-    {
-      id: 2,
-      name: "user1",
-      email: "user1@example.com",
-      password: "$2a$10$ytpYqtTVPkE.8liOUf/ov.KnNcUMf8WNQzMqmWsIXK7x1VevkaVHy",
-      isAdmin: false,
-      image: null,
-      createdAt: "2021-04-07T14:21:46.000Z",
-      updatedAt: "2021-04-07T14:21:46.000Z",
-      Followers: [],
-      FollowerCount: 0,
-      isFollowed: false,
-    },
-    {
-      id: 3,
-      name: "user2",
-      email: "user2@example.com",
-      password: "$2a$10$haSnB7YRouloMuOkAR.svO8hrQoT6rfMsg1SZy2hOyfT36isvc8OK",
-      isAdmin: false,
-      image: null,
-      createdAt: "2021-04-07T14:21:46.000Z",
-      updatedAt: "2021-04-07T14:21:46.000Z",
-      Followers: [],
-      FollowerCount: 0,
-      isFollowed: false,
-    },
-  ],
-};
+import { emptyImageFilter } from "./../utils/mixins";
+import usersAPI from "./../apis/users";
+import { Toast } from "./../utils/helpers";
 
 export default {
   name: "UsersTop",
+  mixins: [emptyImageFilter],
   components: {
     NavTabs,
   },
   created() {
-    this.fetchData();
+    this.fetchTopUsers();
   },
   data() {
     return {
@@ -96,14 +60,81 @@ export default {
     };
   },
   methods: {
-    fetchData() {
-      this.users = dummyData.users;
+    async fetchTopUsers() {
+      try {
+        const { data } = await usersAPI.getTopUsers();
+        this.users = data.users.map((user) => ({
+          id: user.id,
+          name: user.name,
+          image: user.image,
+          followerCount: user.FollowerCount, // 主要用來改成小寫
+          isFollowed: user.isFollowed,
+        }));
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "無法取得資料，請稍後再試！",
+        });
+      }
     },
-    toggleFollow(user) {
-      // Todo: tell serve to follow or unfollow this user via API
+    async addFollowing(userId) {
+      try {
+        const { data } = await usersAPI.addFollow(userId);
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
 
-      // renew data
-      user.isFollowed = !user.isFollowed;
+        // renew data
+        this.users = this.users.map((user) => {
+          if (user.id === userId) {
+            return {
+              ...user,
+              isFollowed: true,
+            };
+          } else {
+            return user;
+          }
+        });
+        Toast.fire({
+          icon: "error",
+          title: "追蹤成功！",
+        });
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "無法追蹤，請稍後再試！",
+        });
+      }
+    },
+    async deleteFollowing(userId) {
+      // Todo: tell serve to follow or unfollow this user via API
+      try {
+        const { data } = await usersAPI.deleteFollow(userId);
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+
+        // renew data
+        this.users = this.users.map((user) => {
+          if (user.id === userId) {
+            return {
+              ...user,
+              isFollowed: false,
+            };
+          } else {
+            return user;
+          }
+        });
+        Toast.fire({
+          icon: "error",
+          title: "已取消追蹤！",
+        });
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "無法取消追蹤，請稍後再試！",
+        });
+      }
     },
   },
 };

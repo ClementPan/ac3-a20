@@ -39,7 +39,7 @@ const dummyUser = {
 };
 
 // import moment from "moment";
-import { fromNowFilter } from "../utils/fromNowFilter.js";
+import { fromNowFilter } from "../utils/mixins.js";
 export default {
   name: "RestaurantComments",
   mixins: [fromNowFilter],

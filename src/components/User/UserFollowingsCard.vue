@@ -9,15 +9,18 @@
         v-for="userFollowing in userFollowings"
         :key="userFollowing.id"
       >
-        <img :src="userFollowing.image" alt="" />
+        <img :src="userFollowing.image | emptyImageFilter" alt="" />
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { emptyImageFilter } from "../../utils/mixins";
+
 export default {
   name: "UserFollowingsCard",
+  mixins: [emptyImageFilter],
   props: {
     userFollowings: {
       type: Array,

@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import { fromNowFilter } from "../utils/fromNowFilter.js";
+import { fromNowFilter } from "../utils/mixins.js";
 
 export default {
   mixins: [fromNowFilter],

@@ -7,14 +7,14 @@
     <div class="card mb-3" style="max-width: 540px; margin: auto">
       <div
         class="row no-gutters"
-        v-for="restaurant in initialRestaurants"
+        v-for="restaurant in restaurants"
         :key="restaurant.id"
       >
         <div class="col-md-4">
           <router-link
             :to="{ name: 'restaurant', params: { id: restaurant.id } }"
           >
-            <img class="card-img" :src="restaurant.image" />
+            <img class="card-img" :src="restaurant.image | emptyImageFilter" />
           </router-link>
         </div>
         <div class="col-md-8">
@@ -39,7 +39,7 @@
               v-if="restaurant.isFavorited"
               type="button"
               class="btn btn-danger mr-2"
-              @click="toggleFavorite(restaurant)"
+              @click="deleteFavorite(restaurant.id)"
             >
               移除最愛
             </button>
@@ -47,7 +47,7 @@
               v-else
               type="button"
               class="btn btn-primary"
-              @click="toggleFavorite(restaurant)"
+              @click="addFavorite(restaurant.id)"
             >
               加到最愛
             </button>
@@ -59,214 +59,97 @@
 </template>
 
 <script>
-const dummyData = {
-  restaurants: [
-    {
-      id: 11,
-      name: "Destany Parisian",
-      tel: "(200) 715-2492",
-      address: "77930 Alisha Shore",
-      opening_hours: "08:00",
-      description: "Quam impedit ad et. Molestiae consequatur dolores ",
-      image:
-        "https://loremflickr.com/320/240/restaurant,food/?random=50.19708396089371",
-      viewCounts: 12,
-      createdAt: "2021-04-07T14:21:46.000Z",
-      updatedAt: "2021-04-08T16:47:05.000Z",
-      CategoryId: 3,
-      FavoritedUsers: [
-        {
-          id: 1,
-          name: "root",
-          email: "root@example.com",
-          password:
-            "$2a$10$r5sNq7DnH82Ly.n0/QjqgOczyBgR3sQ6Yk8NSrKpJtgcJ.Kl0n81K",
-          isAdmin: true,
-          image: null,
-          createdAt: "2021-04-07T14:21:46.000Z",
-          updatedAt: "2021-04-07T14:21:46.000Z",
-          Favorite: {
-            UserId: 1,
-            RestaurantId: 11,
-            createdAt: "2021-04-08T15:41:56.000Z",
-            updatedAt: "2021-04-08T15:41:56.000Z",
-          },
-        },
-      ],
-      isFavorited: true,
-      FavoriteCount: 1,
-    },
-    {
-      id: 50,
-      name: "Mr. Kelvin Barrows",
-      tel: "491.463.2940",
-      address: "532 Kutch Junction",
-      opening_hours: "08:00",
-      description: "Aliquam facere quas ab voluptates beatae modi.\nOmn",
-      image:
-        "https://loremflickr.com/320/240/restaurant,food/?random=70.90376762560324",
-      viewCounts: 0,
-      createdAt: "2021-04-07T14:21:46.000Z",
-      updatedAt: "2021-04-07T14:21:46.000Z",
-      CategoryId: 3,
-      FavoritedUsers: [],
-      isFavorited: true,
-      FavoriteCount: 0,
-    },
-    {
-      id: 49,
-      name: "Lavern Stroman PhD",
-      tel: "1-760-297-3854",
-      address: "400 Rice Station",
-      opening_hours: "08:00",
-      description: "Omnis non cupiditate. Non qui architecto voluptate",
-      image:
-        "https://loremflickr.com/320/240/restaurant,food/?random=84.11843942322581",
-      viewCounts: 0,
-      createdAt: "2021-04-07T14:21:46.000Z",
-      updatedAt: "2021-04-07T14:21:46.000Z",
-      CategoryId: 3,
-      FavoritedUsers: [],
-      isFavorited: false,
-      FavoriteCount: 0,
-    },
-    {
-      id: 48,
-      name: "Ms. Myriam Renner",
-      tel: "1-187-026-1139 x6461",
-      address: "6080 Hoppe Village",
-      opening_hours: "08:00",
-      description: "Molestiae ipsa voluptas optio modi pariatur sit ad",
-      image:
-        "https://loremflickr.com/320/240/restaurant,food/?random=95.11464794833842",
-      viewCounts: 0,
-      createdAt: "2021-04-07T14:21:46.000Z",
-      updatedAt: "2021-04-07T14:21:46.000Z",
-      CategoryId: 1,
-      FavoritedUsers: [],
-      isFavorited: false,
-      FavoriteCount: 0,
-    },
-    {
-      id: 47,
-      name: "Nellie Gusikowski",
-      tel: "1-505-455-4384 x492",
-      address: "56607 Dibbert Summit",
-      opening_hours: "08:00",
-      description: "Ut non modi qui et eligendi praesentium. Ducimus f",
-      image:
-        "https://loremflickr.com/320/240/restaurant,food/?random=11.183631636616731",
-      viewCounts: 0,
-      createdAt: "2021-04-07T14:21:46.000Z",
-      updatedAt: "2021-04-07T14:21:46.000Z",
-      CategoryId: 1,
-      FavoritedUsers: [],
-      isFavorited: false,
-      FavoriteCount: 0,
-    },
-    {
-      id: 46,
-      name: "Virgil Lowe DDS",
-      tel: "(233) 432-3602",
-      address: "8490 Elvis Mall",
-      opening_hours: "08:00",
-      description: "Ea quae similique perferendis et explicabo reprehe",
-      image:
-        "https://loremflickr.com/320/240/restaurant,food/?random=82.69236559627441",
-      viewCounts: 0,
-      createdAt: "2021-04-07T14:21:46.000Z",
-      updatedAt: "2021-04-07T14:21:46.000Z",
-      CategoryId: 4,
-      FavoritedUsers: [],
-      isFavorited: false,
-      FavoriteCount: 0,
-    },
-    {
-      id: 45,
-      name: "Kiara Lemke",
-      tel: "436.695.7214 x268",
-      address: "33828 Denesik Glens",
-      opening_hours: "08:00",
-      description: "Ullam aut beatae.",
-      image:
-        "https://loremflickr.com/320/240/restaurant,food/?random=95.61542017655447",
-      viewCounts: 0,
-      createdAt: "2021-04-07T14:21:46.000Z",
-      updatedAt: "2021-04-07T14:21:46.000Z",
-      CategoryId: 2,
-      FavoritedUsers: [],
-      isFavorited: false,
-      FavoriteCount: 0,
-    },
-    {
-      id: 44,
-      name: "Lisa Kuphal",
-      tel: "1-335-613-9224 x470",
-      address: "9695 Koch Gardens",
-      opening_hours: "08:00",
-      description: "Hic atque et sit incidunt ratione unde tempore. Su",
-      image:
-        "https://loremflickr.com/320/240/restaurant,food/?random=40.92681081675933",
-      viewCounts: 0,
-      createdAt: "2021-04-07T14:21:46.000Z",
-      updatedAt: "2021-04-07T14:21:46.000Z",
-      CategoryId: 2,
-      FavoritedUsers: [],
-      isFavorited: false,
-      FavoriteCount: 0,
-    },
-    {
-      id: 43,
-      name: "Jovany Beahan",
-      tel: "(617) 640-1773",
-      address: "8519 Lane Ports",
-      opening_hours: "08:00",
-      description: "Voluptate placeat perferendis labore eum temporibu",
-      image:
-        "https://loremflickr.com/320/240/restaurant,food/?random=81.77271271754287",
-      viewCounts: 0,
-      createdAt: "2021-04-07T14:21:46.000Z",
-      updatedAt: "2021-04-07T14:21:46.000Z",
-      CategoryId: 1,
-      FavoritedUsers: [],
-      isFavorited: false,
-      FavoriteCount: 0,
-    },
-    {
-      id: 42,
-      name: "Eveline Bergnaum",
-      tel: "1-210-759-6894 x13840",
-      address: "890 Eduardo Estates",
-      opening_hours: "08:00",
-      description: "Sint commodi cum nihil architecto et quis et quae.",
-      image:
-        "https://loremflickr.com/320/240/restaurant,food/?random=7.30605969917284",
-      viewCounts: 0,
-      createdAt: "2021-04-07T14:21:46.000Z",
-      updatedAt: "2021-04-07T14:21:46.000Z",
-      CategoryId: 3,
-      FavoritedUsers: [],
-      isFavorited: false,
-      FavoriteCount: 0,
-    },
-  ],
-};
-
 import NavTabs from "../components/NavTabs.vue";
+import { emptyImageFilter } from "./../utils/mixins";
+import restaurantAPI from "./../apis/restaurants";
+import usersAPI from "./../apis/users";
+import { Toast } from "./../utils/helpers";
 
 export default {
   name: "RestaurantsTop",
+  mixins: [emptyImageFilter],
   components: {
     NavTabs,
   },
+  created() {
+    this.getRestaurantsTopData();
+  },
   data() {
     return {
-      initialRestaurants: dummyData.restaurants,
+      restaurants: [],
     };
   },
   methods: {
-    toggleFavorite(restaurant) {
-      restaurant.isFavorited = !restaurant.isFavorited;
+    async getRestaurantsTopData() {
+      try {
+        const response = await restaurantAPI.getTopRestaurants();
+        if (response.status !== 200) {
+          throw new Error(response.message);
+        }
+        this.restaurants = response.data.restaurants;
+      } catch (error) {
+        console.log(error);
+        Toast.fire({
+          icon: "error",
+          title: "不知道怎麼了？",
+        });
+      }
+    },
+    async addFavorite(restaurantId) {
+      try {
+        const { data } = await usersAPI.addFavorite({ restaurantId });
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+        this.restaurants = this.restaurants.map((restaurant) => {
+          if (restaurant.id === restaurantId) {
+            return {
+              ...restaurant,
+              isFavorited: true,
+            };
+          } else {
+            return restaurant;
+          }
+        });
+        Toast.fire({
+          icon: "success",
+          title: "已將餐廳加入最愛！",
+        });
+      } catch (error) {
+        console.log(error);
+        Toast.fire({
+          icon: "error",
+          title: "發生錯誤，請稍後再試！",
+        });
+      }
+    },
+    async deleteFavorite(restaurantId) {
+      try {
+        const { data } = await usersAPI.deleteFavorite({ restaurantId });
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+        this.restaurants = this.restaurants.map((restaurant) => {
+          if (restaurant.id === restaurantId) {
+            return {
+              ...restaurant,
+              isFavorited: false,
+            };
+          } else {
+            return restaurant;
+          }
+        });
+        Toast.fire({
+          icon: "success",
+          title: "已將餐廳移除最愛！",
+        });
+      } catch (error) {
+        console.log(error);
+        Toast.fire({
+          icon: "error",
+          title: "發生錯誤，請稍後再試！",
+        });
+      }
     },
   },
 };

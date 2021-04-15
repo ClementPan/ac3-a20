@@ -3,7 +3,7 @@
     <div class="card mb-4">
       <img
         class="card-img-top"
-        :src="restaurant.image"
+        :src="restaurant.image | emptyImageFilter"
         alt="Card image cap"
         width="286px"
         height="180px"
@@ -28,7 +28,7 @@
           v-if="restaurant.isFavorited"
           type="button"
           class="btn btn-danger btn-border favorite mr-2"
-          @click.stop.prevent="toogleFavorite"
+          @click.stop.prevent="deleteFavorite(restaurant.id)"
         >
           移除最愛
         </button>
@@ -36,7 +36,7 @@
           v-else
           type="button"
           class="btn btn-primary btn-border favorite mr-2"
-          @click.stop.prevent="toogleFavorite"
+          @click.stop.prevent="addFavorite(restaurant.id)"
         >
           加到最愛
         </button>
@@ -44,7 +44,7 @@
           v-if="restaurant.isLiked"
           type="button"
           class="btn btn-danger like mr-2"
-          @click.stop.prevent="toogleLike"
+          @click.stop.prevent="deleteLike(restaurant.id)"
         >
           Unlike
         </button>
@@ -52,7 +52,7 @@
           v-else
           type="button"
           class="btn btn-primary like mr-2"
-          @click.stop.prevent="toogleLike"
+          @click.stop.prevent="addLike(restaurant.id)"
         >
           Like
         </button>
@@ -62,7 +62,12 @@
 </template>
 
 <script>
+import { emptyImageFilter } from "../utils/mixins";
+import usersAPI from "./../apis/users";
+import { Toast } from "./../utils/helpers";
+
 export default {
+  mixins: [emptyImageFilter],
   props: {
     initialRestaurant: {
       type: Object,
@@ -75,19 +80,89 @@ export default {
     };
   },
   methods: {
-    toogleFavorite() {
-      this.restaurant = {
-        ...this.restaurant,
-        isFavorited: !this.restaurant.isFavorited,
-      };
-      console.log(this.restaurant.isFavorited);
+    async addFavorite(restaurantId) {
+      try {
+        const { data } = await usersAPI.addFavorite({ restaurantId });
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+        this.restaurant = {
+          ...this.restaurant,
+          isFavorited: true,
+        };
+        Toast.fire({
+          icon: "success",
+          title: "已加入最愛！",
+        });
+      } catch (error) {
+        Toast.fire({
+          icon: "warning",
+          title: "無法將餐廳加入最愛，請稍後再試！",
+        });
+      }
     },
-    toogleLike() {
-      this.restaurant = {
-        ...this.restaurant,
-        isLiked: !this.restaurant.isLiked,
-      };
-      console.log(this.restaurant.isLiked);
+    async deleteFavorite(restaurantId) {
+      try {
+        const { data } = await usersAPI.deleteFavorite({ restaurantId });
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+        this.restaurant = {
+          ...this.restaurant,
+          isFavorited: false,
+        };
+        Toast.fire({
+          icon: "success",
+          title: "已移除最愛！",
+        });
+      } catch (error) {
+        Toast.fire({
+          icon: "warning",
+          title: "無法將餐廳移除最愛，請稍後再試！",
+        });
+      }
+    },
+    async addLike(restaurantId) {
+      try {
+        const { data } = await usersAPI.addLike({ restaurantId });
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+        this.restaurant = {
+          ...this.restaurant,
+          isLiked: true,
+        };
+        Toast.fire({
+          icon: "success",
+          title: "已按讚！",
+        });
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "讚按不下去，請稍後再試！",
+        });
+      }
+    },
+    async deleteLike(restaurantId) {
+      try {
+        const { data } = await usersAPI.deleteLike({ restaurantId });
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+        this.restaurant = {
+          ...this.restaurant,
+          isLiked: false,
+        };
+        Toast.fire({
+          icon: "success",
+          title: "已收回讚！",
+        });
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "讚收不回來，請收後再試！",
+        });
+      }
     },
   },
 };
