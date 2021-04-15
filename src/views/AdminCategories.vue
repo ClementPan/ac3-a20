@@ -213,10 +213,17 @@ export default {
       });
     },
     async updateCategory({ id, name }) {
+      // front-end data check
+      if (!name) {
+        Toast.fire({
+          icon: "info",
+          title: "餐廳類別還沒有填哦！",
+        });
+        return;
+      }
       try {
         this.isProcessing = true;
         const { data } = await adminAPI.categories.put({ id, name });
-        console.log(data);
         if (data.status !== "success") {
           throw new Error(data.message);
         }
