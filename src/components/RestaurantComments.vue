@@ -2,7 +2,7 @@
   <div>
     <h2 class="my-4">所有評論：</h2>
 
-    <div v-for="comment in RestaurantComments" :key="comment.id">
+    <div v-for="comment in restaurantComments" :key="comment.id">
       <blockquote class="blockquote mb-0">
         <button
           v-if="currentUser.isAdmin"
@@ -28,15 +28,9 @@
 </template>
 
 <script>
-const dummyUser = {
-  currentUser: {
-    id: 1,
-    name: "root",
-    email: "root@example.com",
-    isAdmin: true,
-  },
-  isAuthenticated: true,
-};
+import { mapState } from "vuex";
+import restaurantsAPI from "../apis/restaurants";
+import { Toast } from "../utils/helpers";
 
 // import moment from "moment";
 import { fromNowFilter } from "../utils/mixins.js";
@@ -44,23 +38,39 @@ export default {
   name: "RestaurantComments",
   mixins: [fromNowFilter],
   props: {
-    RestaurantComments: {
+    restaurantComments: {
       type: Array,
       required: true,
     },
   },
   data() {
-    return {
-      currentUser: dummyUser.currentUser,
-    };
+    return {};
   },
   // filters: {},
   methods: {
-    handleDeleteButtonClick(commentId) {
-      console.log(commentId);
-      // Todo：透過API請求伺服器刪除該Comment
-      this.$emit("after_comment_delete", commentId);
+    async handleDeleteButtonClick(commentId) {
+      try {
+        const { data } = await restaurantsAPI.deleteComment(commentId);
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+        console.log(data);
+        this.$emit("after_comment_delete", commentId);
+
+        Toast.fire({
+          icon: "success",
+          title: "成功刪除評論！",
+        });
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "無法刪除評論，請稍後再試！",
+        });
+      }
     },
+  },
+  computed: {
+    ...mapState(["currentUser"]),
   },
 };
 </script>

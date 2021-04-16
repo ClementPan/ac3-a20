@@ -5,6 +5,9 @@ import SignIn from '../views/SignIn.vue'
 import Restaurants from '../views/Restaurants.vue'
 import VueRouter from 'vue-router'
 
+// store
+import store from '../store'
+
 Vue.use(Router)
 
 const routes = [
@@ -109,6 +112,12 @@ const routes = [
 const router = new VueRouter({
   linkExactActiveClass: 'active',
   routes
+})
+
+// 相較於 beforeRouteUpdate，beforeEach 是在全域
+router.beforeEach((to, from, next) => {
+  store.dispatch('fetchCurrentUser')
+  next()
 })
 
 export default router

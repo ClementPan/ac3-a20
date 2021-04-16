@@ -1,16 +1,19 @@
 <template>
   <div class="card">
     <div class="card-header">
-      <strong>{{ UserFollowers.length }}</strong> followers (追隨者)
+      <strong>{{ UserFollowers ? UserFollowers.length : 0 }}</strong> followers
+      (追隨者)
     </div>
     <div class="card-body">
-      <div
-        class="followerImage"
-        v-for="UserFollower in UserFollowers"
-        :key="UserFollower.id"
-      >
-        <img :src="UserFollower.image | emptyImageFilter" alt="" />
-      </div>
+      <template v-if="UserFollowers">
+        <div
+          class="followerImage"
+          v-for="UserFollower in UserFollowers"
+          :key="UserFollower.id"
+        >
+          <img :src="UserFollower.image | emptyImageFilter" alt="" />
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -24,7 +27,7 @@ export default {
   props: {
     UserFollowers: {
       type: Array,
-      required: true,
+      default: () => [],
     },
   },
 };

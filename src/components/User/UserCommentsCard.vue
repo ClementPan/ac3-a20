@@ -1,7 +1,7 @@
 <template>
   <div class="card">
     <div class="card-header">
-      <strong>{{ UserComments.length }}</strong> 已評論餐廳
+      <strong>{{ UserComments ? UserComments.length : 0 }}</strong> 已評論餐廳
     </div>
 
     <div class="card-body">
@@ -32,7 +32,7 @@ export default {
   props: {
     UserComments: {
       type: Array,
-      required: true,
+      default: () => [],
     },
   },
 };

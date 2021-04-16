@@ -6,7 +6,7 @@ export default {
       email, password
     })
   },
-  signUp({ formData }) {
-    return apiHelper.post('signup', { formData })
+  signUp(payload) {
+    return apiHelper.post('signup', payload)
   }
 }

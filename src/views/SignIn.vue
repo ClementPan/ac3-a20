@@ -88,7 +88,14 @@ export default {
         if (response.statusText !== "OK") {
           throw new Error(response.message);
         }
+
+        // 將 token 存入 localStorage
         localStorage.setItem("token", response.data.token);
+
+        // 透過 setCurrentUser 把使用者資料存到 Vuex 的 state 中
+        this.$store.commit("setCurrentUser", response.data.user);
+
+        // 轉址
         this.$router.push("/restaurants");
       } catch (error) {
         this.isProcessing = false;

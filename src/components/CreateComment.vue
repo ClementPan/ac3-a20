@@ -8,13 +8,20 @@
       <button type="button" class="btn btn-link" @click="$router.back()">
         回上一頁
       </button>
-      <button type="submit" class="btn btn-primary mr-0">Submit</button>
+      <button
+        type="submit"
+        class="btn btn-primary mr-0"
+        :disabled="isProcessing"
+      >
+        Submit
+      </button>
     </div>
   </form>
 </template>
 
 <script>
-import { v4 as uuidv4 } from "uuid";
+import { Toast } from "../utils/helpers";
+import restaurantsAPI from "../apis/restaurants";
 
 export default {
   name: "CreateComment",
@@ -23,27 +30,65 @@ export default {
       type: Number,
       required: true,
     },
+    currentUser: {
+      type: Object,
+      required: true,
+    },
   },
   data() {
     return {
       text: "",
+      isProcessing: false,
     };
   },
   methods: {
-    handleSubmit() {
-      if (!this.text.trim()) {
+    async handleSubmit() {
+      try {
+        if (!this.text.trim()) {
+          this.text = "";
+          Toast.fire({
+            icon: "info",
+            title: "尚未輸入內容！",
+          });
+          return;
+        }
+
+        this.isProcessing = true;
+
+        const newComment = {
+          text: this.text,
+          userId: this.currentUser.id,
+          restaurantId: this.restaurantId,
+        };
+
+        const { data } = await restaurantsAPI.createNewComment(newComment);
+        console.log(data);
+
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+
+        this.$emit("after-create-comment", {
+          text: this.text,
+          commentId: data.commentId,
+          restaurantId: this.restaurantId,
+        });
+
         this.text = "";
-        return alert("尚未輸入內容!");
+
+        Toast.fire({
+          icon: "success",
+          title: "已建立新評論！",
+        });
+        this.isProcessing = false;
+      } catch (error) {
+        this.isProcessing = false;
+        console.error(error);
+        Toast.fire({
+          icon: "error",
+          title: "無法建立新評論，請稍後再試！",
+        });
       }
-
-      // Todo: as server to create new comment via API
-      this.$emit("after-create-comment", {
-        commentId: uuidv4(), // temporary, dunno the ID created by server
-        restaurantId: this.restaurantId,
-        text: this.text,
-      });
-
-      this.text = "";
     },
   },
 };

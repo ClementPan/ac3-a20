@@ -14,16 +14,24 @@
           <p class="card-text">{{ user.email }}</p>
           <ul class="list-unstyled list-inline">
             <li>
-              <strong>{{ user.Comments.length }}</strong> 已評論餐廳
+              <strong>{{ user.Comments ? user.Comments.length : 0 }}</strong>
+              已評論餐廳
             </li>
             <li>
-              <strong>{{ user.FavoritedRestaurants.length }}</strong> 收藏的餐廳
+              <strong>{{
+                user.FavoritedRestaurants ? user.FavoritedRestaurants.length : 0
+              }}</strong>
+              收藏的餐廳
             </li>
             <li>
-              <strong>{{ user.Followings.length }}</strong> followings (追蹤者)
+              <strong>{{
+                user.Followings ? user.Followings.length : 0
+              }}</strong>
+              followings (追蹤者)
             </li>
             <li>
-              <strong>{{ user.Followers.length }}</strong> followers (追隨者)
+              <strong>{{ user.Followers ? user.Followers.length : 0 }}</strong>
+              followers (追隨者)
             </li>
           </ul>
           <p>
@@ -38,11 +46,15 @@
               <button
                 v-if="isFollowed"
                 class="btn btn-danger"
-                @click="toggleIsFollowed"
+                @click="deleteFollowing(user.id)"
               >
                 取消追蹤
               </button>
-              <button v-else class="btn btn-info" @click="toggleIsFollowed">
+              <button
+                v-else
+                class="btn btn-info"
+                @click="addFollowing(user.id)"
+              >
                 追蹤
               </button>
             </template>
@@ -55,17 +67,9 @@
 
 <script>
 import { emptyImageFilter } from "../../utils/mixins";
-
-const dummyUser = {
-  currentUser: {
-    id: 1,
-    name: "管理者",
-    email: "root@example.com",
-    image: "https://i.pravatar.cc/300",
-    isAdmin: true,
-  },
-  isAuthenticated: true,
-};
+import { mapState } from "vuex";
+import { Toast } from "../../utils/helpers";
+import usersAPI from "../../apis/users";
 
 export default {
   name: "UserProfileCard",
@@ -81,35 +85,56 @@ export default {
     },
   },
   data() {
-    return {
-      currentUser: {
-        id: undefined,
-        name: "",
-        email: "",
-        image: "",
-        isAdmin: false,
-      },
-      isAuthenticated: false,
-    };
-  },
-  created() {
-    this.getCurrentUser();
+    return {};
   },
   methods: {
-    getCurrentUser() {
-      // get currentUser info via server
-      this.currentUser = {
-        ...this.currentUser,
-        ...dummyUser.currentUser,
-      };
-    },
-    // addFollowing() {},
-    // deleteFollowing() {},
-    toggleIsFollowed() {
-      // 透過API跟後端說要修改 isFollowed 的資料
+    async addFollowing(userId) {
+      try {
+        // 透過API跟後端說要修改 isFollowed 的資料
+        const { data } = await usersAPI.addFollow(userId);
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+        Toast.fire({
+          icon: "success",
+          title: "已追蹤！",
+        });
 
-      // $emit 跟父層說要修感 isFollowed 的資料
-      this.$emit("afterToggleIsFollowed");
+        // $emit 跟父層說要修感 isFollowed 的資料
+        this.$emit("afterToggleIsFollowed");
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "無法追蹤，請稍後再試！",
+        });
+      }
+    },
+    async deleteFollowing(userId) {
+      try {
+        const { data } = await usersAPI.deleteFollow(userId);
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+        Toast.fire({
+          icon: "success",
+          title: "已取消追蹤！",
+        });
+        this.$emit("afterToggleIsFollowed");
+      } catch (error) {
+        console.log(error);
+        Toast.fire({
+          icon: "error",
+          title: "無法取消追蹤，請稍後再試！",
+        });
+      }
+    },
+  },
+  computed: {
+    ...mapState(["currentUser"]),
+  },
+  watch: {
+    isFollowed(newValue) {
+      this.isFollowed = newValue;
     },
   },
 };

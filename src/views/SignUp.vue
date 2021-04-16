@@ -96,7 +96,7 @@ export default {
     };
   },
   methods: {
-    async handleSubmit(e) {
+    async handleSubmit() {
       // front-end check
       if (this.name === "") {
         Toast.fire({
@@ -136,12 +136,23 @@ export default {
       // post 給後端
       try {
         this.isProcessing = true;
-        const form = e.target;
-        const formData = new FormData(form);
-        const response = await authorizationAPI.signUp({ formData });
-        console.log(response);
-        // blocked by CORS
+        // const form = e.target;
+        // const formData = new FormData(form);
 
+        const newUser = {
+          name: this.name,
+          email: this.email,
+          password: this.password,
+          passwordCheck: this.passwordCheck,
+        };
+
+        console.log(newUser);
+
+        const { data } = await authorizationAPI.signUp(newUser);
+
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
         Toast.fire({
           icon: "success",
           title: "註冊成功!",
@@ -150,7 +161,7 @@ export default {
         // 儲存 token
 
         // 跳轉頁面
-        this.$route.push("/restaurants");
+        this.$router.push("/restaurants");
       } catch (error) {
         this.isProcessing = false;
         console.log(error);
