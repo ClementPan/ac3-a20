@@ -22,6 +22,11 @@ export default new Vuex.Store({
         ...currentUser // 透過API取得
       }
       state.isAuthenticated = true
+    },
+    revokeAuthentication(state) {
+      state.currentUser = {}
+      state.isAuthenticated = false
+      localStorage.removeItem('token')
     }
   },
   actions: { // method to get Data via API: dispatch
