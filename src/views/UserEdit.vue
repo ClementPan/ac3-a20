@@ -35,6 +35,7 @@
       <button type="submit" class="btn btn-primary" :disabled="isProcessing">
         {{ isProcessing ? "Submit..." : "Submit" }}
       </button>
+      <button class="btn btn-danger" @click="goBack">Back</button>
     </form>
   </div>
 </template>
@@ -58,6 +59,7 @@ export default {
         name: "",
         image: "",
       },
+
       isProcessing: false,
     };
   },
@@ -109,6 +111,10 @@ export default {
           title: error,
         });
       }
+    },
+    goBack() {
+      const { id } = this.currentUser;
+      this.$router.push(`/users/${id}`);
     },
   },
   computed: {
