@@ -8,8 +8,13 @@ export default {
       headers: { Authorization: `Bearer ${getToken()}` }
     })
   },
-  get(userId) {
-    return apiHelper.get(`/users/${userId}`, {
+  get(id) {
+    return apiHelper.get(`/users/${id}`, {
+      headers: { Authorization: `Bearer ${getToken()}` }
+    })
+  },
+  update(id, formData) {
+    return apiHelper.put(`users/${id}`, formData, {
       headers: { Authorization: `Bearer ${getToken()}` }
     })
   },

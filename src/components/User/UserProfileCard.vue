@@ -34,7 +34,7 @@
               followers (追隨者)
             </li>
           </ul>
-          <p>
+          <p v-if="!isFetchingUser">
             <router-link
               v-if="user.id === currentUser.id"
               :to="{ name: 'user-edit', params: { id: currentUser.id } }"
@@ -59,6 +59,7 @@
               </button>
             </template>
           </p>
+          <p v-else>資料載入中...</p>
         </div>
       </div>
     </div>
@@ -70,6 +71,7 @@ import { emptyImageFilter } from "../../utils/mixins";
 import { mapState } from "vuex";
 import { Toast } from "../../utils/helpers";
 import usersAPI from "../../apis/users";
+// import adminAPI from "../../apis/admin";
 
 export default {
   name: "UserProfileCard",
@@ -82,6 +84,10 @@ export default {
     isFollowed: {
       type: Boolean,
       required: true,
+    },
+    isFetchingUser: {
+      type: Boolean,
+      default: true,
     },
   },
   data() {

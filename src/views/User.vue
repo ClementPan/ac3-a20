@@ -5,6 +5,7 @@
       <UserProfileCardVue
         :user="user"
         :isFollowed="isFollowed"
+        :isFetchingUser="isProcessing"
         @afterToggleIsFollowed="handleToggleIsFollowed"
       ></UserProfileCardVue>
 
@@ -13,12 +14,14 @@
           <!-- UserFollowingsCard -->
           <UserFollowingsCard :userFollowings="user.Followings" />
           <br />
+          <!-- UserFollowerCard -->
           <UserFollowerCard :UserFollowers="user.Followers" />
         </div>
         <div class="col-md-8">
           <!-- UserCommentsCard -->
           <UserCommentsCard :UserComments="user.Comments" />
           <br />
+          <!-- UserFavoritedRestaurantsCard -->
           <UserFavoritedRestaurantsCard
             :FavoritedRestaurants="user.FavoritedRestaurants"
           />
@@ -61,16 +64,19 @@ export default {
     return {
       user: {},
       isFollowed: false,
+      isProcessing: false,
     };
   },
   methods: {
     async fetchUserData(userId) {
       try {
-        console.log("userId: " + userId);
+        this.isProcessing = true;
         const response = await usersAPI.get(userId);
         if (response.status !== 200) {
           throw new Error(response.statusText);
         }
+        console.log("response");
+        console.log(response);
 
         const {
           id,
@@ -95,7 +101,9 @@ export default {
           Followers: Followers ? Followers : [],
         };
         this.isFollowed = response.data.isFollowed;
+        this.isProcessing = false;
       } catch (error) {
+        this.isProcessing = false;
         console.log(error);
         Toast.fire({
           icon: "error",
