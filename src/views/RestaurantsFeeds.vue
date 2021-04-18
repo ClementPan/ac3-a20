@@ -52,9 +52,10 @@ export default {
     async fetchFeeds() {
       try {
         this.isLoading = true;
-        const response = await restaurantsAPI.getFeeds();
-        this.restaurants = response.data.restaurants;
-        this.comments = response.data.comments.filter(
+        const { data } = await restaurantsAPI.getFeeds();
+        // console.log(data.comments);
+        this.restaurants = data.restaurants;
+        this.comments = data.comments.filter(
           (comment) => comment.Restaurant && comment.text
         );
         this.isLoading = false;

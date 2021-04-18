@@ -1,10 +1,10 @@
 <template>
-  <Spinner v-if="isLoading"></Spinner>
-  <div v-else class="container py-5">
+  <div class="container py-5">
     <!-- AdminNav Component -->
     <AdminNav></AdminNav>
+    <Spinner v-if="isLoading"></Spinner>
 
-    <table class="table">
+    <table v-else class="table">
       <thead class="thead-dark">
         <tr>
           <th scope="col">#</th>
@@ -64,15 +64,19 @@ export default {
     return {
       users: [],
       user: {},
+      isLoading: true,
     };
   },
   methods: {
     async fetchUsers() {
       try {
+        this.isLoading = true;
         // Todo: call server for data via API
         const { data } = await adminAPI.users.getUsers();
         this.users = data.users;
+        this.isLoading = false;
       } catch (error) {
+        this.isLoading = false;
         Toast.fire({
           icon: "error",
           title: "無法取得使用者資訊，請稍後再試！",

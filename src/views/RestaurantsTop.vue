@@ -1,6 +1,5 @@
 <template>
-  <Spinner v-if="isLoading"></Spinner>
-  <div v-else class="container py-5">
+  <div class="container py-5">
     <NavTabs />
     <Spinner v-if="isLoading"></Spinner>
     <template v-else>
@@ -104,7 +103,7 @@ export default {
         console.log(error);
         Toast.fire({
           icon: "error",
-          title: "不知道怎麼了？",
+          title: "無法取得餐廳資料，請稍後再試！",
         });
       }
     },
