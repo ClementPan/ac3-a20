@@ -14,6 +14,7 @@ export default new Vuex.Store({
       isAdmin: false,
     },
     isAuthenticated: false,
+    token: ''
   },
   mutations: { // method to mutate state: commit
     setCurrentUser(state, currentUser) {
@@ -22,10 +23,12 @@ export default new Vuex.Store({
         ...currentUser // 透過API取得
       }
       state.isAuthenticated = true
+      state.token = localStorage.getItem('token')
     },
     revokeAuthentication(state) {
       state.currentUser = {}
       state.isAuthenticated = false
+      state.token = ''
       localStorage.removeItem('token')
     }
   },
@@ -42,8 +45,14 @@ export default new Vuex.Store({
         commit('setCurrentUser', {
           id, name, email, image, isAdmin
         })
+
+        // signin success
+        return true
       } catch (error) {
-        console.log(error)
+        // 驗證失敗的話一併觸發登出的行為，以清除 state 中的 token
+        commit('revokeAuthentication')
+        console.log(error.message)
+        return false
       }
     }
   },

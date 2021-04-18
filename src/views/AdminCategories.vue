@@ -1,5 +1,6 @@
 <template>
-  <div class="container py-5">
+  <Spinner v-if="isLoading"></Spinner>
+  <div v-else class="container py-5">
     <AdminNav />
 
     <form class="my-4">
@@ -96,11 +97,13 @@
 import AdminNav from "../components/AdminRestaurants/AdminNav";
 import adminAPI from "../apis/admin";
 import { Toast } from "../utils/helpers";
+import Spinner from "../components/Spinner";
 
 export default {
   name: "AdminCategories",
   components: {
     AdminNav,
+    Spinner,
   },
   // 3. 定義 Vue 中使用的 data 資料
   data() {
@@ -109,6 +112,7 @@ export default {
       newCategoryName: "",
       isCreating: false,
       isProcessing: false,
+      isLoading: true,
     };
   },
   // 5. 調用 `fetchCategories` 方法
@@ -118,6 +122,7 @@ export default {
   methods: {
     async fetchCategories() {
       try {
+        this.isLoading = true;
         const { data } = await adminAPI.categories.get();
         this.categories = data.categories.map((category) => {
           return {
@@ -126,7 +131,9 @@ export default {
             nameCached: "", // 用來純存編輯前的原 name 名稱
           };
         });
+        this.isLoading = false;
       } catch (error) {
+        this.isLoading = false;
         console.log(error);
         Toast.fire({
           icon: "error",

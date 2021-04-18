@@ -1,5 +1,6 @@
 <template>
-  <form @submit.prevent.stop="handleSubmit">
+  <Spinner v-if="isLoading"></Spinner>
+  <form v-else @submit.prevent.stop="handleSubmit">
     <div class="form-group mb-4">
       <label for="text">留下評論：</label>
       <textarea class="form-control" rows="3" name="text" v-model="text" />
@@ -22,9 +23,13 @@
 <script>
 import { Toast } from "../utils/helpers";
 import restaurantsAPI from "../apis/restaurants";
+import Spinner from "../components/Spinner";
 
 export default {
   name: "CreateComment",
+  components: {
+    Spinner,
+  },
   props: {
     restaurantId: {
       type: Number,
@@ -39,11 +44,13 @@ export default {
     return {
       text: "",
       isProcessing: false,
+      isLoading: true,
     };
   },
   methods: {
     async handleSubmit() {
       try {
+        this.isLoading = true;
         if (!this.text.trim()) {
           this.text = "";
           Toast.fire({
@@ -81,7 +88,9 @@ export default {
           title: "已建立新評論！",
         });
         this.isProcessing = false;
+        this.isLoading = false;
       } catch (error) {
+        this.isLoading = false;
         this.isProcessing = false;
         console.error(error);
         Toast.fire({
@@ -93,3 +102,13 @@ export default {
   },
 };
 </script>
+
+<script>
+// ...
+</script>
+
+<style scoped>
+.form-group {
+  margin: 21px 0 8px;
+}
+</style>

@@ -1,5 +1,6 @@
 <template>
-  <table class="table">
+  <Spinner v-if="isLoading"></Spinner>
+  <table v-else class="table">
     <thead class="thead-dark">
       <tr>
         <th scope="col">#</th>
@@ -48,12 +49,17 @@
 <script>
 import adminAPI from "../../apis/admin";
 import { Toast } from "../../utils/helpers";
+import Spinner from "../Spinner";
 
 export default {
   name: "AdminRestaurantsTable",
+  components: {
+    Spinner,
+  },
   data() {
     return {
       restaurants: [],
+      isLoading: true,
     };
   },
   created() {
@@ -62,12 +68,15 @@ export default {
   methods: {
     async fetchRestaurants() {
       try {
+        this.isLoading = true;
         const response = await adminAPI.restaurants.get();
         this.restaurants = response.data.restaurants;
         if (response.status !== 200) {
           throw new Error(response.statusText);
         }
+        this.isLoading = false;
       } catch {
+        this.isLoading = false;
         Toast.fire({
           icon: "error",
           title: "無法取得餐廳資料，請稍後再試！",

@@ -1,5 +1,6 @@
 <template>
-  <div class="container py-5">
+  <Spinner v-if="isLoading"></Spinner>
+  <div v-else class="container py-5">
     <!-- AdminNav Component -->
     <AdminNav></AdminNav>
 
@@ -51,10 +52,10 @@ import AdminNav from "../components/AdminRestaurants/AdminNav";
 import { mapState } from "vuex";
 import { Toast } from "../utils/helpers";
 import adminAPI from "../apis/admin";
-
+import Spinner from "../components/Spinner";
 export default {
   name: "AdminUsers",
-  components: { AdminNav },
+  components: { AdminNav, Spinner },
   created() {
     this.fetchUsers();
     this.setUser(this.currentUser);
