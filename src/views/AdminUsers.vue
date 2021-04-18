@@ -25,6 +25,7 @@
                 type="button"
                 class="btn btn-link"
                 @click="toggleUserRole(user.id)"
+                :disabled="isProcessing"
               >
                 set as user
               </button>
@@ -33,6 +34,7 @@
                 type="button"
                 class="btn btn-link"
                 @click="toggleUserRole(user.id)"
+                :disabled="isProcessing"
               >
                 set as admin
               </button>
@@ -65,6 +67,7 @@ export default {
       users: [],
       user: {},
       isLoading: true,
+      isProcessing: false,
     };
   },
   methods: {
@@ -88,6 +91,7 @@ export default {
     },
     async toggleUserRole(id) {
       try {
+        this.isProcessing = true;
         const isAdmin = this.user.isAdmin;
         const { data } = await adminAPI.users.setUserRole(id, isAdmin);
         if (data.status !== "success") {
@@ -100,7 +104,9 @@ export default {
           icon: "success",
           title: `成功變更使用者身分為：${newRole}！`,
         });
+        this.isProcessing = false;
       } catch (error) {
+        this.isProcessing = false;
         console.log(error);
         Toast.fire({
           icon: "error",
