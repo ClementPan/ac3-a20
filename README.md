@@ -1,5 +1,7 @@
 # forum-front-end-vue
 
+Demo: https://clementpan.github.io/forum-front-end-vue/
+
 ## Project setup
 ```
 npm install
